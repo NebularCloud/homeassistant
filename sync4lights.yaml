@@ -1,0 +1,74 @@
+blueprint:
+  name: Synchronize Zigbee light states
+  description: Synchronize the on/off, brightness, and color states of 4 Zigbee lights
+  domain: automation
+  input:
+    entity_1:
+      name: First Zigbee light
+      selector:
+        entity:
+          domain: light
+    entity_2:
+      name: Second Zigbee light
+      selector:
+        entity:
+          domain: light
+    entity_3:
+      name: Third Zigbee light
+      selector:
+        entity:
+          domain: light
+    entity_4:
+      name: Fourth Zigbee light
+      selector:
+        entity:
+          domain: light
+
+variables:
+  entity_1: !input 'entity_1'
+  entity_2: !input 'entity_2'
+  entity_3: !input 'entity_3'
+  entity_4: !input 'entity_4'
+
+trigger:
+- platform: state
+  entity_id:
+    - !input 'entity_1'
+    - !input 'entity_2'
+    - !input 'entity_3'
+    - !input 'entity_4'
+
+condition:
+- condition: template
+  value_template: '{{ trigger.to_state.state != trigger.from_state.state }}'
+
+action:
+- choose:
+    - conditions:
+        - condition: state
+          entity_id: '{{ trigger.entity_id }}'
+          state: 'on'
+      sequence:
+        - service: light.turn_on
+          target:
+            entity_id: >
+              {% set entities = [entity_1, entity_2, entity_3, entity_4] %}
+              {% set target_entities = entities | select('!=', trigger.entity_id) | list %}
+              {{ target_entities | join(', ') }}
+          data:
+            brightness: "{{ trigger.to_state.attributes.brightness | default(0) }}"
+            color_temp: "{{ trigger.to_state.attributes.color_temp | default(0) }}"
+            hs_color: "{{ trigger.to_state.attributes.hs_color | default([0, 0]) }}"
+            rgb_color: "{{ trigger.to_state.attributes.rgb_color | default([0, 0, 0]) }}"
+            xy_color: "{{ trigger.to_state.attributes.xy_color | default([0, 0]) }}"
+    - conditions:
+        - condition: state
+          entity_id: '{{ trigger.entity_id }}'
+          state: 'off'
+      sequence:
+        - service: light.turn_off
+          target:
+            entity_id: >
+              {% set entities = [entity_1, entity_2, entity_3, entity_4] %}
+              {% set target_entities = entities | select('!=', trigger.entity_id) | list %}
+              {{ target_entities | join(', ') }}
