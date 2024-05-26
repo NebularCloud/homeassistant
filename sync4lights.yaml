@@ -54,10 +54,22 @@ action:
               {{ target_entities | join(', ') }}
           data:
             brightness: "{{ trigger.to_state.attributes.brightness | default(0) }}"
-            color_temp: "{{ trigger.to_state.attributes.color_temp | default(0) }}"
-            hs_color: "{{ trigger.to_state.attributes.hs_color | default([0, 0]) }}"
-            rgb_color: "{{ trigger.to_state.attributes.rgb_color | default([0, 0, 0]) }}"
-            xy_color: "{{ trigger.to_state.attributes.xy_color | default([0, 0]) }}"
+            color_temp: >
+              {% if 'color_temp' in trigger.to_state.attributes %}
+              {{ trigger.to_state.attributes.color_temp }}
+              {% endif %}
+            hs_color: >
+              {% if 'hs_color' in trigger.to_state.attributes %}
+              {{ trigger.to_state.attributes.hs_color }}
+              {% endif %}
+            rgb_color: >
+              {% if 'rgb_color' in trigger.to_state.attributes %}
+              {{ trigger.to_state.attributes.rgb_color }}
+              {% endif %}
+            xy_color: >
+              {% if 'xy_color' in trigger.to_state.attributes %}
+              {{ trigger.to_state.attributes.xy_color }}
+              {% endif %}
     - conditions:
         - condition: template
           value_template: '{{ trigger.to_state.state == "off" }}'
