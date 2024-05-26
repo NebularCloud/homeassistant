@@ -38,16 +38,13 @@ trigger:
     - !input 'entity_3'
     - !input 'entity_4'
 
-condition:
-- condition: template
-  value_template: '{{ trigger.to_state.state != trigger.from_state.state }}'
+condition: []
 
 action:
 - choose:
     - conditions:
-        - condition: state
-          entity_id: '{{ trigger.entity_id }}'
-          state: 'on'
+        - condition: template
+          value_template: '{{ trigger.to_state.state == "on" }}'
       sequence:
         - service: light.turn_on
           target:
@@ -62,9 +59,8 @@ action:
             rgb_color: "{{ trigger.to_state.attributes.rgb_color | default([0, 0, 0]) }}"
             xy_color: "{{ trigger.to_state.attributes.xy_color | default([0, 0]) }}"
     - conditions:
-        - condition: state
-          entity_id: '{{ trigger.entity_id }}'
-          state: 'off'
+        - condition: template
+          value_template: '{{ trigger.to_state.state == "off" }}'
       sequence:
         - service: light.turn_off
           target:
